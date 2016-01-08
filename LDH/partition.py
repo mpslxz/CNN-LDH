@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-def partition_img(img, scale, transformMat):
+def partitionHadImg(img, scale, transformMat):
     out = []
     transformed = []
 
