@@ -1,9 +1,9 @@
-
+import sys
 import pickle
 import numpy as np
 from math import ceil
-import theano
-from theano import tensor as T
+sys.path.insert(0, 'LDH')
+import extractFeatures
 from PIL import Image, ImageOps
 
 
@@ -14,13 +14,13 @@ def addPaddingZero(img,dim):
     return  newImage #Image.fromarray(newImage)
 
 def makeData(dim):
-    imageCount = 1440
+    imageCount = 580
     size = (dim, dim)
     trainingPercent = 0.7
     testPercent = 0.1
     validationPercent = 0.2
     winDim = ceil(2*dim/3)
-    laminae = np.ndarray((dim*dim, winDim*winDim))
+    laminae = np.ndarray((dim*dim, winDim*winDim + 84*3))
 
     # labels = np.zeros((dim*dim, 2))
     labels = np.zeros((dim*dim))
@@ -28,19 +28,16 @@ def makeData(dim):
     fileCount = 0
 
     print "Loading Laminae...\n"
-    # for i in range(1, 19, imageCount+1):
-    i = 20
-    c = 2
-    while (i <= 1440):
+    for i in range(1, imageCount+1):
         print i
         # img = Image.open("newLam/img_%d.jpg" %i)
-        img = Image.open("/home/mehran/Desktop/left/Im%d.jpg" %i)
+        img = Image.open("/home/mehran/Desktop/ConvNet/newLam/img_%d.jpg" %i)
         img = ImageOps.fit(img, size)
         # imgEn = Image.open("enhanced/img_%d.jpg" %i)
-        imgEn = Image.open("/home/mehran/Desktop/left/normEnhanIm%d.jpg" %i)
+        imgEn = Image.open("/home/mehran/Desktop/ConvNet/enhanced/img_%d.jpg" %i)
         imgEn = ImageOps.fit(img, size)
 
-        segmented = Image.open("/home/mehran/Desktop/left/leftPeakLabels/ImPeak_%d.jpg" %i)
+        segmented = Image.open("/home/mehran/Desktop/ConvNet/base of lamina/lamBase_%d.jpg" %i)
         segmented = ImageOps.fit(segmented, size)
 
         paddedImage = addPaddingZero(img, dim)
@@ -52,7 +49,7 @@ def makeData(dim):
                 window = paddedImage[m:m+winDim, n:n+winDim]
                 windowEn = paddedImageEn[m:m+winDim, n:n+winDim]
                 Res = 0.7*windowEn + 0.3*window
-                laminae[count, :] = np.reshape(Res, winDim*winDim)/np.amax(Res)
+                laminae[count, :] = np.append(np.reshape(Res, winDim*winDim)/np.amax(Res) , np.asarray(extractFeatures.extractFeatures(Res/np.amax(Res))))
                 S = segmented.load()
 
                 labels[count] = 1 if S[m, n] > 0 else 0
@@ -73,10 +70,9 @@ def makeData(dim):
 
             L = np.hstack((a, b))
             Patches = np.vstack(([laminae[v,:] for v in posIndices], [laminae[u,:] for u in negIndices]))
-            f = file("/home/mehran/Desktop/left/Pickles/sample_183_balanced_%d.p" %fileCount, 'wb')
+            f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %fileCount, 'wb')
             pickle.dump([Patches, L], f)
             fileCount += 1
-        i = 20*c
-        c = c+1
 
-makeData(183)
+
+makeData(64)
