@@ -5,6 +5,7 @@ from math import ceil
 sys.path.insert(0, 'LDH')
 import extractFeatures
 from PIL import Image, ImageOps
+import timeit
 
 
 def addPaddingZero(img,dim):
@@ -49,7 +50,7 @@ def makeData(dim):
                 window = paddedImage[m:m+winDim, n:n+winDim]
                 windowEn = paddedImageEn[m:m+winDim, n:n+winDim]
                 Res = 0.7*windowEn + 0.3*window
-                laminae[count, :] = np.append(np.reshape(Res, winDim*winDim)/np.amax(Res) , np.asarray(extractFeatures.extractFeatures(Res/np.amax(Res))))
+                laminae[count, :] = np.append(np.reshape(Res, winDim*winDim)/np.amax(Res), np.asarray(extractFeatures.extractFeatures(Res/np.amax(Res))))
                 S = segmented.load()
 
                 labels[count] = 1 if S[m, n] > 0 else 0
