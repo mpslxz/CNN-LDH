@@ -19,15 +19,15 @@ def loadData(dim):
     labels = np.zeros((dim*dim))
 
     fileCount = 0
-    numOfTrainingSamples = 40
-    numOfTestSamples = 20
-    numOfValidationSamples = 10
+    numOfTrainingSamples = 5
+    numOfTestSamples = 2
+    numOfValidationSamples = 2
 
     print "Making training data...\n"
-    ind = np.random.randint(0, 72)
-    f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+    ind = np.random.randint(0, 573)
+    # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
-    # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
+    f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/full_enhanced+bones/sample_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+bone_labels/sample_balanced_%d.p" %ind, 'rb')
@@ -35,9 +35,10 @@ def loadData(dim):
     training_data = lam
     training_labels = l
     for i in range(1, numOfTrainingSamples):
-        ind = np.random.randint(0, 72)
+        ind = np.random.randint(0, 573)
         print i
-        f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+        # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+        f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')
@@ -49,8 +50,9 @@ def loadData(dim):
         f.close()
 
     print "Making test data...\n"
-    ind = np.random.randint(0, 72)
-    f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+    ind = np.random.randint(0, 573)
+    f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
+    # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')
@@ -60,9 +62,10 @@ def loadData(dim):
     test_data = lam
     test_labels = l
     for i in range(1, numOfTestSamples):
-        ind = np.random.randint(0, 72)
+        ind = np.random.randint(0, 573)
         print i
-        f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+        f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
+        # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')
@@ -75,8 +78,9 @@ def loadData(dim):
 
 
     print "Making validation data...\n"
-    ind = np.random.randint(0, 72)
-    f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+    ind = np.random.randint(0, 573)
+    f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
+    # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
     # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')
@@ -86,9 +90,10 @@ def loadData(dim):
     validation_data = lam
     validation_labels = l
     for i in range(1, numOfValidationSamples):
-        ind = np.random.randint(0, 72)
+        ind = np.random.randint(0, 573)
         print i
-        f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
+        f = file("/home/mehran/Desktop/ConvNet/Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels_with_LDH/sample_balanced_%d.p" %ind, 'rb')
+        # f = file("/home/mehran/Desktop/left/Pickles/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+verBody_dilated_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_overlay+lamBase_dilated_new_labels/sample_balanced_%d.p" %ind, 'rb')
         # f = file("Pickles/balanced/enhanced_bone/bone_sample_balanced_%d.p" %ind, 'rb')

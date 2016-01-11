@@ -22,7 +22,6 @@ from theano.tensor.nnet import sigmoid
 from theano.tensor import tanh
 
 
-
 os.system('clear')
 GPU = True
 if GPU:
@@ -57,12 +56,18 @@ class Network(object):
         self.params = [param for layer in self.layers for param in layer.params]
         self.x = T.matrix("x")
         self.y = T.ivector("y")
+        self.LDH = T.matrix("LDH")
+        self.LDH = self.x[:, 1764:2016]
         init_layer = self.layers[0]
-        init_layer.set_inpt(self.x, self.x, self.mini_batch_size)
+        init_layer.set_inpt(self.x[:,0:1764], self.x[:,0:1764], self.mini_batch_size)
         for j in xrange(1, len(self.layers)):
             prev_layer, layer = self.layers[j-1], self.layers[j]
-            layer.set_inpt(
-                prev_layer.output, prev_layer.output_dropout, self.mini_batch_size)
+            if (j == 2):
+                # inpt = T.concatenate((prev_layer.output, self.LDH))
+                layer.set_inpt(prev_layer.output, prev_layer.output_dropout, self.mini_batch_size, self.LDH)
+            else:
+                layer.set_inpt(
+                    prev_layer.output, prev_layer.output_dropout, self.mini_batch_size)
         self.output = self.layers[-1].output
         self.output_dropout = self.layers[-1].output_dropout
 
@@ -73,6 +78,10 @@ class Network(object):
         training_x, training_y = training_data
         validation_x, validation_y = validation_data
         test_x, test_y = test_data
+
+        # training_x = training_x_LDH[:,0:1764]
+        # validation_x  = validation_x_LDH[:,0:1764]
+        # test_x = test_x_LDH[:,0:1764]
 
         # compute number of minibatches for training, validation and testing
         num_training_batches = size(training_data)/mini_batch_size
@@ -215,8 +224,10 @@ class FullyConnectedLayer(object):
             name='b', borrow=True)
         self.params = [self.w, self.b]
 
-    def set_inpt(self, inpt, inpt_dropout, mini_batch_size):
-        self.inpt = inpt.reshape((mini_batch_size, self.n_in))
+    def set_inpt(self, inpt, inpt_dropout, mini_batch_size, LDH):
+        LDHFeatures = LDH.reshape((mini_batch_size, 252))
+        CFeatures = inpt.reshape((mini_batch_size, 810))
+        self.inpt = T.concatenate([CFeatures, LDHFeatures])#inpt.reshape((mini_batch_size, self.n_in))
         self.output = self.activation_fn(
             (1-self.p_dropout)*T.dot(self.inpt, self.w) + self.b)
         self.y_out = T.argmax(self.output, axis=1)
@@ -281,7 +292,7 @@ def sharedForPrediction(data):
             np.asarray(data, dtype=theano.config.floatX), borrow=True)
         return shared_x
 
-mini_batch_size = 1024
+mini_batch_size = 10
 training_data, validation_data, test_data = loadSegmentationDataset.loadData(dim=64)
 
 print "Dataset loaded successfully...\n"
@@ -309,7 +320,7 @@ net = Network([
         # ConvPoolLayer(image_shape=(mini_batch_size, 5, 29, 29),
         #               filter_shape=(5, 5, 3, 3),
         #               poolsize=(3, 3), activation_fn=ReLU),
-        FullyConnectedLayer(n_in=10*9*9, n_out=2000, activation_fn=ReLU),
+        FullyConnectedLayer(n_in=10*9*9 + 252, n_out=2000, activation_fn=ReLU),
         SoftmaxLayer(n_in=2000, n_out=2)], mini_batch_size)
 
 
@@ -319,54 +330,54 @@ net = Network([
 print "Training the model...\n"
 net.SGD(training_data, 200, mini_batch_size, 0.02, validation_data, test_data, 0.02)
 
-for rep in range(1,9):
-   training_data = None
-   validation_data = None
-   test_data = None
-   gc.collect()
-   training_data, validation_data, test_data = loadSegmentationDataset.loadData(dim=64)
-   net.SGD(training_data, 200, mini_batch_size, 0.02, validation_data, test_data, 0.02)
-
-f = file("trained_net_trainedOnJordensImagesSmallLambda.p","w")
-pickle.dump(net,f)
-
-# f = file("trained_net.p",'rb')
-# Net = pickle.load(f)
-
-print "Training completed...\n"
-
-print "Predicting...\n"
-
-for i in range(1, 1442):
-    print i
-    imPath = "/home/mehran/Desktop/left/Im%d.jpg" %i
-    imEnhanPath = "/home/mehran/Desktop/left/normEnhanIm%d.jpg" %i
-    sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
-    predData = sharedForPrediction(sample)
-    predRes = net.predict(predData)
-    saveFile = open("/home/mehran/Desktop/left/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
-    np.savetxt(saveFile,predRes,'%i'," ")
-    saveFile.close()
-
-for i in range(1, 1435):
-    print i
-    imPath = "/home/mehran/Desktop/right1/Im%d.jpg" %i
-    imEnhanPath = "/home/mehran/Desktop/right1/normEnhanIm%d.jpg" %i
-    sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
-    predData = sharedForPrediction(sample)
-    predRes = net.predict(predData)
-    saveFile = open("/home/mehran/Desktop/right1/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
-    np.savetxt(saveFile,predRes,'%i'," ")
-    saveFile.close()
-
-for i in range(1, 1598):
-    print i
-    imPath = "/home/mehran/Desktop/right2/Im%d.jpg" %i
-    imEnhanPath = "/home/mehran/Desktop/right2/normEnhanIm%d.jpg" %i
-    sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
-    predData = sharedForPrediction(sample)
-    predRes = net.predict(predData)
-    saveFile = open("/home/mehran/Desktop/right2/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
-    np.savetxt(saveFile,predRes,'%i'," ")
-    saveFile.close()
-
+# for rep in range(1,9):
+#    training_data = None
+#    validation_data = None
+#    test_data = None
+#    gc.collect()
+#    training_data, validation_data, test_data = loadSegmentationDataset.loadData(dim=64)
+#    net.SGD(training_data, 200, mini_batch_size, 0.02, validation_data, test_data, 0.02)
+#
+# f = file("trained_net_trainedOnJordensImagesSmallLambda.p","w")
+# pickle.dump(net,f)
+#
+# # f = file("trained_net.p",'rb')
+# # Net = pickle.load(f)
+#
+# print "Training completed...\n"
+#
+# print "Predicting...\n"
+#
+# for i in range(1, 1442):
+#     print i
+#     imPath = "/home/mehran/Desktop/left/Im%d.jpg" %i
+#     imEnhanPath = "/home/mehran/Desktop/left/normEnhanIm%d.jpg" %i
+#     sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
+#     predData = sharedForPrediction(sample)
+#     predRes = net.predict(predData)
+#     saveFile = open("/home/mehran/Desktop/left/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
+#     np.savetxt(saveFile,predRes,'%i'," ")
+#     saveFile.close()
+#
+# for i in range(1, 1435):
+#     print i
+#     imPath = "/home/mehran/Desktop/right1/Im%d.jpg" %i
+#     imEnhanPath = "/home/mehran/Desktop/right1/normEnhanIm%d.jpg" %i
+#     sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
+#     predData = sharedForPrediction(sample)
+#     predRes = net.predict(predData)
+#     saveFile = open("/home/mehran/Desktop/right1/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
+#     np.savetxt(saveFile,predRes,'%i'," ")
+#     saveFile.close()
+#
+# for i in range(1, 1598):
+#     print i
+#     imPath = "/home/mehran/Desktop/right2/Im%d.jpg" %i
+#     imEnhanPath = "/home/mehran/Desktop/right2/normEnhanIm%d.jpg" %i
+#     sample = makeDataOnTheFly.makeDataOnTheFly(64, imPath, imEnhanPath)
+#     predData = sharedForPrediction(sample)
+#     predRes = net.predict(predData)
+#     saveFile = open("/home/mehran/Desktop/right2/Predictions_JordensImagesSmallLambda/Prediction%d.txt" %i, "a")
+#     np.savetxt(saveFile,predRes,'%i'," ")
+#     saveFile.close()
+#
